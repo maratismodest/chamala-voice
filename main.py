@@ -1,6 +1,7 @@
 # V3
 import os
 import torch
+import torchaudio
 
 device = torch.device('cpu')
 torch.set_num_threads(4)
@@ -13,10 +14,16 @@ if not os.path.isfile(local_file):
 model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
 model.to(device)
 
-example_text = 'Мин яратам сине Татарстан.'
+example_text = 'Алиса, мин сине бик ныкъ сагындым!'
 sample_rate = 48000
 speaker='dilyara'
 
-audio_paths = model.save_wav(text=example_text,
-                             speaker=speaker,
-                             sample_rate=sample_rate)
+
+
+audio_paths = model.apply_tts(text=example_text,
+                        speaker=speaker,
+                        sample_rate=sample_rate)
+
+torchaudio.save('test_1.mp3',
+                  audio_paths.unsqueeze(0),
+                  sample_rate=sample_rate)
