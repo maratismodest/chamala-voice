@@ -16,8 +16,9 @@ model.to(device)
 
 example_text = 'Мин почти кеше тавышы. Мин сезнең белән д+ус булырга телим'
 
-
-text='әти'
+#җ
+#ү
+text='яшь'
 filename=text+'.mp3'
 
 sample_rate = 48000
