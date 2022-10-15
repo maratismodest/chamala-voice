@@ -14,16 +14,23 @@ if not os.path.isfile(local_file):
 model = torch.package.PackageImporter(local_file).load_pickle("tts_models", "model")
 model.to(device)
 
-example_text = 'Алиса, мин сине бик ныкъ сагындым!'
+example_text = 'Мин почти кеше тавышы. Мин сезнең белән д+ус булырга телим'
+
+text='аяк киеме'
+filename=text+'.mp3'
+
 sample_rate = 48000
 speaker='dilyara'
+put_accent=True
 
 
 
-audio_paths = model.apply_tts(text=example_text,
+audio_paths = model.apply_tts(text=text+'.',
                         speaker=speaker,
-                        sample_rate=sample_rate)
+                        sample_rate=sample_rate,
+                        put_accent=put_accent,
+                        )
 
-torchaudio.save('test_1.mp3',
+torchaudio.save(filename,
                   audio_paths.unsqueeze(0),
                   sample_rate=sample_rate)
