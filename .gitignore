@@ -1,6 +1,9 @@
 # idea
 .idea
 
+# vscode
+.vscode
+
 # tatar language model
 model.pt
 
