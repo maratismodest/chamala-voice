@@ -1,5 +1,7 @@
 ### Instruction
 
+pip3 install torch torchvision torchaudio
+
 - create folder audio
 - run command: python main.py
 - wait first time when model.py will be downloaded
