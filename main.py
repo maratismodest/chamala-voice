@@ -35,6 +35,7 @@ audio_paths = model.apply_tts(text=text+'.',
                         put_accent=put_accent,
                         )
 
+
 torchaudio.save('audio/' + filename,
                   audio_paths.unsqueeze(0),
                   sample_rate=sample_rate)
