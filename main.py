@@ -67,6 +67,21 @@ async def text_to_speech(request: TTSRequest):
             # Delete the temporary file after streaming
             os.unlink(temp_filename)
 
+        # Create a buffer for the audio instead of a temp file
+        buffer = io.BytesIO()
+
+        # Save audio to the buffer
+        torchaudio.save(
+            buffer,
+            audio_tensor.unsqueeze(0),
+            sample_rate=request.sample_rate,
+            format="wav"
+        )
+
+        # Reset buffer position to the beginning
+        buffer.seek(0)
+
+
         # Stream the audio file
         return StreamingResponse(
             iterfile(),
