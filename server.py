@@ -1,10 +1,13 @@
 import os
 import torch
 import torchaudio
-from flask import Flask, request, send_file, jsonify
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
 import re
+from typing import Optional
 
-app = Flask(__name__)
+app = FastAPI(title="Tatar TTS API", description="Text-to-speech API for Tatar language")
 
 # Setup TTS model
 device = torch.device('cpu')
@@ -34,19 +37,17 @@ def sanitize_filename(text):
     return safe_name[:50]  # Limit filename length
 
 
-@app.route('/tts', methods=['POST'])
-def text_to_speech():
+class TTSRequest(BaseModel):
+    text: str
+    speaker: str = "dilyara"
+    sample_rate: int = 48000
+    put_accent: bool = True
+
+
+@app.post("/tts")
+async def text_to_speech(request: TTSRequest):
     """Convert text to speech and return audio file"""
-    data = request.get_json()
-
-    if not data or 'text' not in data:
-        return jsonify({'error': 'Text is required'}), 400
-
-    # Get parameters from request or use defaults
-    text = data['text']
-    speaker = data.get('speaker', 'dilyara')
-    sample_rate = int(data.get('sample_rate', 48000))
-    put_accent = data.get('put_accent', True)
+    text = request.text
 
     # Ensure text ends with punctuation for better synthesis
     if text and not text[-1] in '.!?':
@@ -54,46 +55,48 @@ def text_to_speech():
 
     # Generate safe filename
     safe_name = sanitize_filename(text)
-    filename = f"{safe_name}_{speaker}_{sample_rate}.mp3"
+    filename = f"{safe_name}_{request.speaker}_{request.sample_rate}.mp3"
     file_path = os.path.join(AUDIO_DIR, filename)
 
     try:
         # Generate audio
         audio_paths = model.apply_tts(
             text=text,
-            speaker=speaker,
-            sample_rate=sample_rate,
-            put_accent=put_accent
+            speaker=request.speaker,
+            sample_rate=request.sample_rate,
+            put_accent=request.put_accent
         )
 
         # Save audio file
         torchaudio.save(
             file_path,
             audio_paths.unsqueeze(0),
-            sample_rate=sample_rate
+            sample_rate=request.sample_rate
         )
 
         # Return the audio file
-        return send_file(file_path, mimetype='audio/mpeg')
+        return FileResponse(file_path, media_type='audio/mpeg')
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.route('/speakers', methods=['GET'])
-def get_speakers():
+@app.get("/speakers")
+async def get_speakers():
     """Return available speakers"""
     # For the Tatar model, we know there's the 'dilyara' speaker
     # but there might be others - this could be expanded
     speakers = ['dilyara']
-    return jsonify({'speakers': speakers})
+    return {"speakers": speakers}
 
 
-@app.route('/health', methods=['GET'])
-def health_check():
+@app.get("/health")
+async def health_check():
     """Simple health check endpoint"""
-    return jsonify({'status': 'ok', 'model': 'Silero TTS Tatar v3'})
+    return {"status": "ok", "model": "Silero TTS Tatar v3"}
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    import uvicorn
+
+    uvicorn.run(app, host="127.0.0.1", port=8080)
