@@ -7,5 +7,5 @@
 # tatar language model
 model.pt
 
-audio
+#audio
 .DS_Store
