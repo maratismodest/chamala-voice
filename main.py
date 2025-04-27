@@ -1,6 +1,7 @@
 # V3
 import os
 import io
+import numpy as np
 import torch
 import torchaudio
 from fastapi import FastAPI, HTTPException
