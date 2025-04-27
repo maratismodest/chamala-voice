@@ -68,7 +68,7 @@ async def text_to_speech(request: TTSRequest):
             buffer,
             audio_tensor.unsqueeze(0),
             sample_rate=request.sample_rate,
-            format="mp3"
+            format="wav"
         )
 
         # Reset buffer position to the beginning
@@ -77,8 +77,8 @@ async def text_to_speech(request: TTSRequest):
         # Return the audio file
         return StreamingResponse(
             buffer,
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": f"attachment; filename=tatar_tts.mp3"}
+            media_type="audio/wav",
+            headers={"Content-Disposition": f"attachment; filename=tatar_tts.wav"}
         )
 
     except Exception as e:
