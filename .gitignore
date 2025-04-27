@@ -5,7 +5,7 @@
 .vscode
 
 # tatar language model
-model.pt
+#model.pt
 
-audio
+#audio
 .DS_Store
