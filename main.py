@@ -2,6 +2,7 @@ import os
 import torch
 import torchaudio
 import io
+from pydub import AudioSegment
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -24,18 +25,17 @@ model = torch.package.PackageImporter(
     local_file).load_pickle("tts_models", "model")
 model.to(device)
 
+
 class TTSRequest(BaseModel):
     text: str
     speaker: str = "dilyara"
     sample_rate: int = 48000
     put_accent: bool = True
 
+
 @app.post("/tts")
 async def text_to_speech(request: TTSRequest):
-    """Convert text to speech and stream audio directly"""
     text = request.text
-
-    # Ensure text ends with punctuation for better synthesis
     if text and not text[-1] in '.!?':
         text = text + '.'
 
@@ -48,29 +48,31 @@ async def text_to_speech(request: TTSRequest):
             put_accent=request.put_accent
         )
 
-        # Create buffer for audio data
-        buffer = io.BytesIO()
-
-        # Save to buffer instead of file
+        # First save as WAV
+        wav_buffer = io.BytesIO()
         torchaudio.save(
-            buffer,
+            wav_buffer,
             audio_tensor.unsqueeze(0),
             sample_rate=request.sample_rate,
-            format="mp3"
+            format="wav"
         )
+        wav_buffer.seek(0)
 
-        # Reset buffer position
-        buffer.seek(0)
+        # Convert WAV to MP3 using pydub
+        wav_audio = AudioSegment.from_wav(wav_buffer)
+        mp3_buffer = io.BytesIO()
+        wav_audio.export(mp3_buffer, format="mp3")
+        mp3_buffer.seek(0)
 
-        # Stream the audio data directly
         return StreamingResponse(
-            buffer,
+            mp3_buffer,
             media_type="audio/mpeg",
             headers={"Content-Disposition": f"attachment; filename=tatar_tts.mp3"}
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/speakers")
 async def get_speakers():
@@ -79,11 +81,14 @@ async def get_speakers():
     speakers = ['dilyara']
     return {"speakers": speakers}
 
+
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint"""
     return {"status": "ok", "model": "Silero TTS Tatar v3"}
 
+
 if __name__ == '__main__':
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=5000)
