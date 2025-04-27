@@ -2,7 +2,7 @@ import os
 import torch
 import torchaudio
 import io
-from pydub import AudioSegment
+import tempfile
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -25,18 +25,15 @@ model = torch.package.PackageImporter(
     local_file).load_pickle("tts_models", "model")
 model.to(device)
 
-
 class TTSRequest(BaseModel):
     text: str
     speaker: str = "dilyara"
     sample_rate: int = 48000
     put_accent: bool = True
 
-
-# Modify the tts endpoint
 @app.post("/tts")
 async def text_to_speech(request: TTSRequest):
-    """Convert text to speech and stream audio directly"""
+    """Convert text to speech and stream audio"""
     text = request.text
 
     # Ensure text ends with punctuation for better synthesis
@@ -52,30 +49,39 @@ async def text_to_speech(request: TTSRequest):
             put_accent=request.put_accent
         )
 
-        # Create buffer for audio data
-        buffer = io.BytesIO()
+        # Create a temporary file to save the audio
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+            temp_filename = temp_file.name
 
-        # Save to buffer as WAV format instead of MP3
+        # Save audio to the temporary file
         torchaudio.save(
-            buffer,
+            temp_filename,
             audio_tensor.unsqueeze(0),
-            sample_rate=request.sample_rate,
-            format="wav"  # Change to WAV format
+            sample_rate=request.sample_rate
         )
 
-        # Reset buffer position
-        buffer.seek(0)
+        # Function to stream the file content
+        def iterfile():
+            with open(temp_filename, 'rb') as f:
+                yield from f
+            # Delete the temporary file after streaming
+            os.unlink(temp_filename)
 
-        # Stream the audio data directly
+        # Stream the audio file
         return StreamingResponse(
-            buffer,
-            media_type="audio/wav",  # Change media type to WAV
+            iterfile(),
+            media_type="audio/wav",
             headers={"Content-Disposition": f"attachment; filename=tatar_tts.wav"}
         )
 
     except Exception as e:
+        # Make sure to clean up the temp file if an error occurs
+        if 'temp_filename' in locals():
+            try:
+                os.unlink(temp_filename)
+            except:
+                pass
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/speakers")
 async def get_speakers():
@@ -84,14 +90,11 @@ async def get_speakers():
     speakers = ['dilyara']
     return {"speakers": speakers}
 
-
 @app.get("/health")
 async def health_check():
     """Simple health check endpoint"""
     return {"status": "ok", "model": "Silero TTS Tatar v3"}
 
-
 if __name__ == '__main__':
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=5000)
