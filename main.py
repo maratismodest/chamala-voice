@@ -33,9 +33,13 @@ class TTSRequest(BaseModel):
     put_accent: bool = True
 
 
+# Modify the tts endpoint
 @app.post("/tts")
 async def text_to_speech(request: TTSRequest):
+    """Convert text to speech and stream audio directly"""
     text = request.text
+
+    # Ensure text ends with punctuation for better synthesis
     if text and not text[-1] in '.!?':
         text = text + '.'
 
@@ -48,26 +52,25 @@ async def text_to_speech(request: TTSRequest):
             put_accent=request.put_accent
         )
 
-        # First save as WAV
-        wav_buffer = io.BytesIO()
+        # Create buffer for audio data
+        buffer = io.BytesIO()
+
+        # Save to buffer as WAV format instead of MP3
         torchaudio.save(
-            wav_buffer,
+            buffer,
             audio_tensor.unsqueeze(0),
             sample_rate=request.sample_rate,
-            format="wav"
+            format="wav"  # Change to WAV format
         )
-        wav_buffer.seek(0)
 
-        # Convert WAV to MP3 using pydub
-        wav_audio = AudioSegment.from_wav(wav_buffer)
-        mp3_buffer = io.BytesIO()
-        wav_audio.export(mp3_buffer, format="mp3")
-        mp3_buffer.seek(0)
+        # Reset buffer position
+        buffer.seek(0)
 
+        # Stream the audio data directly
         return StreamingResponse(
-            mp3_buffer,
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": f"attachment; filename=tatar_tts.mp3"}
+            buffer,
+            media_type="audio/wav",  # Change media type to WAV
+            headers={"Content-Disposition": f"attachment; filename=tatar_tts.wav"}
         )
 
     except Exception as e:
