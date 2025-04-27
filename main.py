@@ -1,6 +1,7 @@
 import os
 import torch
 import torchaudio
+import time
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -33,8 +34,11 @@ model.to(device)
 def sanitize_filename(text):
     """Convert text to a safe filename"""
     # Replace special characters and limit length
+    if not text or text.isspace():
+        return "audio_sample"  # Default name for empty text
     safe_name = re.sub(r'[^a-zA-Z0-9_-]', '_', text)
-    return safe_name[:50]  # Limit filename length
+    safe_name = re.sub(r'_+', '_', safe_name)  # Replace multiple underscores with one
+    return safe_name[:50].strip('_')  # Limit filename length and trim underscores
 
 
 class TTSRequest(BaseModel):
@@ -55,7 +59,8 @@ async def text_to_speech(request: TTSRequest):
 
     # Generate safe filename
     safe_name = sanitize_filename(text)
-    filename = f"{safe_name}_{request.speaker}_{request.sample_rate}.mp3"
+    timestamp = str(int(time.time()))
+    filename = f"{timestamp}_{safe_name}_{request.speaker}_{request.sample_rate}.mp3"
     file_path = os.path.join(AUDIO_DIR, filename)
 
     try:
