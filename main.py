@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import torchaudio
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 from pydantic import BaseModel
 
 app = FastAPI(title="Tatar TTS API", description="Simple text-to-speech API for Tatar language")
@@ -83,6 +83,73 @@ async def text_to_speech(request: TTSRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/")
+async def home():
+    """Serve a simple HTML page with a form for TTS conversion"""
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Tatar TTS Web Interface</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+            textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+            button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+            button:hover { background-color: #45a049; }
+            #audioContainer { margin-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <h1>Tatar Text-to-Speech</h1>
+        <textarea id="textInput" placeholder="Enter Tatar text here..."></textarea>
+        <div>
+            <button onclick="convertText()">Convert to Speech</button>
+        </div>
+        <div id="audioContainer">
+            <audio id="audioPlayer" controls style="display: none;"></audio>
+        </div>
+        
+        <script>
+            async function convertText() {
+                const text = document.getElementById('textInput').value;
+                if (!text) return;
+                
+                try {
+                    const response = await fetch('/tts', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            speaker: "dilyara",
+                            sample_rate: 48000,
+                            put_accent: true
+                        }),
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    
+                    const audioPlayer = document.getElementById('audioPlayer');
+                    audioPlayer.src = audioUrl;
+                    audioPlayer.style.display = 'block';
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to convert text to speech');
+                }
+            }
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content, status_code=200)
 
 
 @app.get("/health")
