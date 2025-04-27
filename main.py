@@ -9,7 +9,16 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 app = FastAPI(title="Tatar TTS API", description="Simple text-to-speech API for Tatar language")
+from fastapi.middleware.cors import CORSMiddleware
 
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 # Setup TTS model
 device = torch.device('cpu')
 torch.set_num_threads(4)
