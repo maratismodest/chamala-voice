@@ -1,6 +1,8 @@
 # V3
 import os
 import io
+from asyncio import timeout
+
 import torch
 import torchaudio
 from fastapi import FastAPI, HTTPException
@@ -165,4 +167,4 @@ if __name__ == '__main__':
     # or use default 5000 for local development
     port = int(os.environ.get("PORT", 80))
 
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=60)
