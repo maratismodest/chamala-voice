@@ -7,7 +7,8 @@ import torchaudio
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+
+from templates import html_error_template, TTSRequest, local_file
 
 app = FastAPI(title="Tatar TTS API", description="Simple text-to-speech API for Tatar language")
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +25,6 @@ app.add_middleware(
 # Setup TTS model
 device = torch.device('cpu')
 torch.set_num_threads(4)
-local_file = 'model.pt'
 
 # Download the model if not present
 if not os.path.isfile(local_file):
@@ -35,13 +35,6 @@ if not os.path.isfile(local_file):
 model = torch.package.PackageImporter(
     local_file).load_pickle("tts_models", "model")
 model.to(device)
-
-
-class TTSRequest(BaseModel):
-    text: str
-    speaker: str = "dilyara"
-    sample_rate: int = 48000
-    put_accent: bool = True
 
 
 @app.post("/tts")
@@ -96,18 +89,7 @@ async def home():
         return HTMLResponse(content=html_content, status_code=200)
     except FileNotFoundError:
         # Fallback HTML if file doesn't exist
-        html_content = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Tatar TTS Web Interface</title>
-        </head>
-        <body>
-            <h1>Something went wrong</h1>
-            <p>Sorry, the Tatar TTS service is currently unavailable.</p>
-        </body>
-        </html>
-        """
+        html_content = html_error_template
         return HTMLResponse(content=html_content, status_code=200)
 
 

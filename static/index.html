@@ -3,14 +3,16 @@
 <head>
     <title>Tatar TTS Web Interface</title>
     <link rel="stylesheet" href="/static/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A web interface for Tatar text-to-speech conversion using a pre-trained model.">
+    <meta name="author" content="Marat Faizerakhmanov">
+    <meta name="publisher" content="Marat Faizerakhmanov">
 </head>
 <body>
 <h1>Tatar Text-to-Speech</h1>
-<form>
-    <textarea id="textInput" placeholder="Enter Tatar text here..."></textarea>
-    <div>
-        <button onclick="convertText()">Convert to Speech</button>
-    </div>
+<form onsubmit="event.preventDefault(); convertText();">
+    <textarea id="textInput" placeholder="Enter Tatar text here..." rows="6" autofocus required></textarea>
+    <button type="submit">Convert to Speech</button>
 </form>
 
 <div id="audioContainer">
