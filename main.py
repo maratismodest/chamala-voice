@@ -1,7 +1,6 @@
 # V3
 import os
 import io
-import numpy as np
 import torch
 import torchaudio
 from fastapi import FastAPI, HTTPException
@@ -95,7 +94,7 @@ async def home():
         <title>Tatar TTS Web Interface</title>
         <style>
             body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+            textarea { width: 100%; height: 100px; margin-bottom: 10px; padding: 10px; }
             button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
             button:hover { background-color: #45a049; }
             #audioContainer { margin-top: 20px; }
