@@ -99,6 +99,7 @@ async def home():
             textarea { width: 100%; height: 100px; margin-bottom: 10px; padding: 10px; }
             button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
             button:hover { background-color: #45a049; }
+            button:disabled { background-color: #d3d3d3; }
             #audioContainer { margin-top: 20px; }
         </style>
     </head>
@@ -114,8 +115,12 @@ async def home():
         
         <script>
             async function convertText() {
+                const button = document.querySelector('button');
                 const text = document.getElementById('textInput').value;
+        
                 if (!text) return;
+        
+                button.disabled = true; // Disable the button
                 
                 try {
                     const response = await fetch('/tts', {
@@ -145,6 +150,8 @@ async def home():
                 } catch (error) {
                     console.error('Error:', error);
                     alert('Failed to convert text to speech');
+                } finally {
+                    button.disabled = false; // Re-enable the button
                 }
             }
         </script>
