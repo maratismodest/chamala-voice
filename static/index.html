@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Tatar TTS Web Interface</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>Tatar Text-to-Speech</h1>
+<form>
+    <textarea id="textInput" placeholder="Enter Tatar text here..."></textarea>
+    <div>
+        <button onclick="convertText()">Convert to Speech</button>
+    </div>
+</form>
+
+<div id="audioContainer">
+    <audio id="audioPlayer" controls style="display: none;"></audio>
+</div>
+<script src="/static/script.js"></script>
+</body>
+</html>

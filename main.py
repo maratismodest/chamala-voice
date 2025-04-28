@@ -1,12 +1,12 @@
 # V3
 import os
 import io
-from asyncio import timeout
 
 import torch
 import torchaudio
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 app = FastAPI(title="Tatar TTS API", description="Simple text-to-speech API for Tatar language")
@@ -20,6 +20,7 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
 # Setup TTS model
 device = torch.device('cpu')
 torch.set_num_threads(4)
@@ -88,77 +89,26 @@ async def text_to_speech(request: TTSRequest):
 
 @app.get("/")
 async def home():
-    """Serve a simple HTML page with a form for TTS conversion"""
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Tatar TTS Web Interface</title>
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            textarea { width: 100%; height: 100px; margin-bottom: 10px; padding: 10px; }
-            button { padding: 8px 16px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-            button:hover { background-color: #45a049; }
-            button:disabled { background-color: #d3d3d3; }
-            #audioContainer { margin-top: 20px; }
-        </style>
-    </head>
-    <body>
-        <h1>Tatar Text-to-Speech</h1>
-        <textarea id="textInput" placeholder="Enter Tatar text here..."></textarea>
-        <div>
-            <button onclick="convertText()">Convert to Speech</button>
-        </div>
-        <div id="audioContainer">
-            <audio id="audioPlayer" controls style="display: none;"></audio>
-        </div>
-        
-        <script>
-            async function convertText() {
-                const button = document.querySelector('button');
-                const text = document.getElementById('textInput').value;
-        
-                if (!text) return;
-        
-                button.disabled = true; // Disable the button
-                
-                try {
-                    const response = await fetch('/tts', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            text: text,
-                            speaker: "dilyara",
-                            sample_rate: 48000,
-                            put_accent: true
-                        }),
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('API request failed');
-                    }
-                    
-                    const audioBlob = await response.blob();
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    
-                    const audioPlayer = document.getElementById('audioPlayer');
-                    audioPlayer.src = audioUrl;
-                    audioPlayer.style.display = 'block';
-                    audioPlayer.play();
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to convert text to speech');
-                } finally {
-                    button.disabled = false; // Re-enable the button
-                }
-            }
-        </script>
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content, status_code=200)
+    """Serve the HTML page from an external file"""
+    try:
+        with open("static/index.html", "r", encoding="utf-8") as file:
+            html_content = file.read()
+        return HTMLResponse(content=html_content, status_code=200)
+    except FileNotFoundError:
+        # Fallback HTML if file doesn't exist
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Tatar TTS Web Interface</title>
+        </head>
+        <body>
+            <h1>Something went wrong</h1>
+            <p>Sorry, the Tatar TTS service is currently unavailable.</p>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content, status_code=200)
 
 
 @app.get("/health")
@@ -167,11 +117,19 @@ async def health_check():
     return {"status": "ok", "model": "Silero TTS Tatar v3"}
 
 
+# Create a static files directory to serve assets like CSS, JS, images
+try:
+    os.makedirs("static", exist_ok=True)
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+except Exception:
+    pass
+
 if __name__ == '__main__':
     import uvicorn
 
     # Get port from environment variable for Railway deployment
-    # or use default 5000 for local development
+    # or use default 80 for production
     port = int(os.environ.get("PORT", 80))
 
-    uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
+    # uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
