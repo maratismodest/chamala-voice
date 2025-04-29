@@ -1,0 +1,13 @@
+[Unit]
+Description=FastAPI application
+After=network.target
+
+[Service]
+WorkingDirectory=/root/chamala-voice
+ExecStart=/root/chamala-voice/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+User=root
+Environment="PATH=/root/chamala-voice/.venv/bin"
+
+[Install]
+WantedBy=multi-user.target
