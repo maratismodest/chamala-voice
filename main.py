@@ -1,17 +1,17 @@
-# V3
 import os
 import io
-
 import torch
 import torchaudio
+
+# FastAPI is a framework
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from templates import html_error_template, TTSRequest, local_file
+# Constants
+from templates import html_error_template, TTSRequest, local_file, title, description
 
-app = FastAPI(title="Tatar TTS API", description="Simple text-to-speech API for Tatar language")
-from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI(title=title, description=description)
 
 # Configure CORS
 app.add_middleware(

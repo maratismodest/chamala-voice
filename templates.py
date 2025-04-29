@@ -14,10 +14,15 @@ html_error_template = """
         </html>
         """
 
+
 class TTSRequest(BaseModel):
     text: str
     speaker: str = "dilyara"
     sample_rate: int = 48000
     put_accent: bool = True
 
+
 local_file = 'model.pt'
+
+title = "Tatar TTS API"
+description = "Simple text-to-speech API for Tatar language"
