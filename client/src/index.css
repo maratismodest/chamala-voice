@@ -9,12 +9,14 @@
 #root {
     max-width: 800px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 @layer base {
-
 
     textarea {
         width: 100%;
@@ -43,11 +45,4 @@
         background-color: #d3d3d3;
     }
 
-    .w-17 {
-        width: calc(var(--spacing) * 17);
-    }
-
-    .pr-29 {
-        padding-right: calc(var(--spacing) * 29);
-    }
 }
