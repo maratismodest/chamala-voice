@@ -7,6 +7,7 @@ import torchaudio
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
 
 # Constants
 from templates import html_error_template, TTSRequest, local_file, title, description
@@ -113,5 +114,5 @@ if __name__ == '__main__':
     # or use default 80 for production
     port = int(os.environ.get("PORT", 8000))
 
-    uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
-    # uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
+    # uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)

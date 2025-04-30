@@ -9,10 +9,8 @@
 
 ## Install libraries
 
-- ``pip3 install fastapi``
-- ``pip3 install uvicorn``
-- ``pip3 install soundfile``
-- ``pip3 install ffmpeg``
+- ``pip3 install fastapi uvicorn``
+- ``pip3 install soundfile ffmpeg``
 - ``pip3 install torch torchvision torchaudio``
 - ``all other libraries are in requirements.txt``
 
