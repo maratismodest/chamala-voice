@@ -1,7 +1,7 @@
 import {useState} from "react";
 import axios from 'axios';
-import {tatarLetters} from "./shared/constants";
-import {SubmitHandler, useForm, useWatch} from "react-hook-form";
+// import {tatarLetters} from "./shared/constants";
+import {SubmitHandler, useForm} from "react-hook-form";
 
 type Inputs = {
     text: string
@@ -11,10 +11,10 @@ function App() {
     const {
         register,
         handleSubmit,
-        setValue,
-        control,
+        // setValue,
+        // control,
     } = useForm<Inputs>()
-    const text = useWatch({control, name: 'text'})
+    // const text = useWatch({control, name: 'text'})
     const onSubmit: SubmitHandler<Inputs> = async (data) => {
         const {text} = data;
         if (!text) return;
@@ -53,13 +53,13 @@ function App() {
                 onSubmit={handleSubmit(onSubmit)}>
                 <textarea placeholder="Enter Tatar text here..." rows={6} autoFocus required
                           {...register("text")}></textarea>
-                <ul className='flex gap-3 mt-2 justify-center'>
-                    {tatarLetters.map((button, index) => (
-                        <li key={index}>
-                            <button type="button" onClick={() => setValue('text', text + button)}>{button}</button>
-                        </li>
-                    ))}
-                </ul>
+                {/*<ul className='flex gap-3 mt-2 justify-center'>*/}
+                {/*    {tatarLetters.map((button, index) => (*/}
+                {/*        <li key={index}>*/}
+                {/*            <button type="button" onClick={() => setValue('text', text + button)}>{button}</button>*/}
+                {/*        </li>*/}
+                {/*    ))}*/}
+                {/*</ul>*/}
                 <button type="submit" disabled={loading} className='mt-8 !px-12 !py-4 mx-auto'>Convert to Speech
                 </button>
             </form>
