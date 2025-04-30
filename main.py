@@ -85,7 +85,7 @@ async def text_to_speech(request: TTSRequest):
 async def home():
     """Serve the HTML page from an external file"""
     try:
-        with open("static/index.html", "r", encoding="utf-8") as file:
+        with open("static/dist/index.html", "r", encoding="utf-8") as file:
             html_content = file.read()
         return HTMLResponse(content=html_content, status_code=200)
     except FileNotFoundError:
