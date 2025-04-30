@@ -21,3 +21,6 @@
 3. DONE!
 
 All Credits go to https://github.com/snakers4
+
+root@cv4699997:~/chamala-voice# sudo systemctl restart chamala-voice.service
+root@cv4699997:~/chamala-voice# sudo systemctl restart apache2
