@@ -1,0 +1,1 @@
+export const tatarLetters: string[] = ['ә', 'җ', 'ң', 'ө', 'ү', 'һ']

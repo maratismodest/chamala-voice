@@ -1,19 +1,29 @@
 import {useState} from "react";
 import axios from 'axios';
-import './App.css'
+import {tatarLetters} from "./shared/constants";
+import {SubmitHandler, useForm, useWatch} from "react-hook-form";
 
-
-const buttons = ['ә', 'җ', 'ң', 'ө', 'ү', 'һ']
+type Inputs = {
+    text: string
+}
 
 function App() {
-    const [text, setText] = useState('');
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        control,
+    } = useForm<Inputs>()
+    const text = useWatch({control, name: 'text'})
+    const onSubmit: SubmitHandler<Inputs> = async (data) => {
+        const {text} = data;
+        if (!text) return;
+        await convertText(text)
+    }
     const [loading, setLoading] = useState(false);
     const audioPlayer = document.getElementById('audioPlayer') as HTMLAudioElement;
 
-    const convertText = async () => {
-
-        if (!text) return;
-
+    const convertText = async (text: string) => {
         try {
             setLoading(true);
             const response = await axios.post('/tts', {
@@ -21,7 +31,6 @@ function App() {
             }, {
                 responseType: 'arraybuffer'
             });
-
             const audioBlob = new Blob([response.data], {type: 'audio/mp3'});
             const audioUrl = URL.createObjectURL(audioBlob);
             audioPlayer.src = audioUrl;
@@ -35,21 +44,19 @@ function App() {
         }
     }
 
+
     return (
         <>
             <h1 className='text-3xl'>Tatar Text-to-Speech</h1>
             <form
                 className='mt-4'
-                onSubmit={(event) => {
-                    event.preventDefault()
-                    convertText()
-                }}>
-                <textarea placeholder="Enter Tatar text here..." rows={6} autoFocus required value={text}
-                          onChange={(e) => setText(e.target.value)}></textarea>
+                onSubmit={handleSubmit(onSubmit)}>
+                <textarea placeholder="Enter Tatar text here..." rows={6} autoFocus required
+                          {...register("text")}></textarea>
                 <ul className='flex gap-3 mt-2 justify-center'>
-                    {buttons.map((button, index) => (
+                    {tatarLetters.map((button, index) => (
                         <li key={index}>
-                            <button type="button" onClick={() => setText(prev => prev + button)}>{button}</button>
+                            <button type="button" onClick={() => setValue('text', text + button)}>{button}</button>
                         </li>
                     ))}
                 </ul>
