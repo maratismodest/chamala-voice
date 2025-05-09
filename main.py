@@ -2,6 +2,7 @@ import os
 import io
 import torch
 import torchaudio
+import uuid
 
 # FastAPI is a framework
 from fastapi import FastAPI, HTTPException
@@ -80,6 +81,39 @@ async def text_to_speech(request: TTSRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/mp3")
+async def text_to_speech(request: TTSRequest):
+    """Convert text to speech and return MP3"""
+    text = request.text
+
+    # Ensure text ends with punctuation for better synthesis
+    if text and not text[-1] in '.!?':
+        text = text + '.'
+
+    try:
+        # Generate audio
+        audio_tensor = model.apply_tts(
+            text=text,
+            speaker=request.speaker,
+            sample_rate=request.sample_rate,
+            put_accent=request.put_accent
+        )
+
+        myuuid = uuid.uuid4()
+        url =  'static/audio/'+ str(myuuid) + '.mp3'
+        # Save audio to the buffer as MP3
+        torchaudio.save(
+            url,
+            audio_tensor.unsqueeze(0),
+            sample_rate=request.sample_rate,
+            format="mp3"
+        )
+        link = 'https://chamala.tatar/' + url
+        # Return the audio file
+        return {"status": "ok", "url": link}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/")
 async def home():
@@ -112,7 +146,7 @@ if __name__ == '__main__':
 
     # Get port from environment variable for Railway deployment
     # or use default 80 for production
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 80))
 
     # uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
     uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
