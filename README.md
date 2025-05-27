@@ -12,8 +12,8 @@
 - ``pip3 install fastapi uvicorn``
 - ``pip3 install soundfile ffmpeg``
 - ``pip3 install torch torchvision torchaudio``
+- ``pip3 install -r requirements.txt``
 - ``all other libraries are in requirements.txt``
-
 ## Actions
 
 1. run command: ``python3 main.py``
