@@ -174,5 +174,5 @@ if __name__ == '__main__':
     # or use default 80 for production
     port = int(os.environ.get("PORT", 80))
 
-    # uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
-    uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
+    # uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
