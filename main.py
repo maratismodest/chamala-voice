@@ -3,9 +3,11 @@ import io
 import torch
 import torchaudio
 import uuid
+# Используем библиотеку requests для отправки запроса
+import requests
 
 # FastAPI is a framework
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File
 from fastapi.responses import StreamingResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
@@ -37,6 +39,28 @@ if not os.path.isfile(local_file):
 model = torch.package.PackageImporter(
     local_file).load_pickle("tts_models", "model")
 model.to(device)
+
+
+@app.post("/speech-to-text")
+async def speech_to_text(file: bytes = File(...)):
+    """Convert speech to text using Tatar ASR API"""
+    try:
+        # Подготовка формы для отправки
+        form_data = {"file": ("audio.wav", file, "audio/wav")}
+
+        # URL Tatar ASR API
+        url = 'https://tat-asr.api.translate.tatar/listening/'
+
+        response = requests.post(url, files=form_data)
+
+        # Проверка ответа
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise HTTPException(status_code=response.status_code, detail=f"ASR API error: {response.text}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/tts")
@@ -81,6 +105,7 @@ async def text_to_speech(request: TTSRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/mp3")
 async def text_to_speech(request: TTSRequest):
     """Convert text to speech and return MP3"""
@@ -100,7 +125,7 @@ async def text_to_speech(request: TTSRequest):
         )
 
         myuuid = uuid.uuid4()
-        url =  'static/audio/'+ str(myuuid) + '.mp3'
+        url = 'static/audio/' + str(myuuid) + '.mp3'
         # Save audio to the buffer as MP3
         torchaudio.save(
             url,
@@ -114,6 +139,7 @@ async def text_to_speech(request: TTSRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/")
 async def home():
