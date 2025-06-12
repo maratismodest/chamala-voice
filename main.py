@@ -107,7 +107,7 @@ async def text_to_speech(request: TTSRequest):
 
 
 @app.post("/mp3")
-async def text_to_speech(request: TTSRequest):
+async def text_to_speech_url(request: TTSRequest):
     """Convert text to speech and return MP3"""
     text = request.text
 
