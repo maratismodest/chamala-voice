@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 import os
 import io
 import torch
@@ -14,6 +16,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 # Constants
 from templates import html_error_template, TTSRequest, local_file, title, description
+from openai_chat_route import router as openai_router
 
 app = FastAPI(title=title, description=description)
 
@@ -39,6 +42,8 @@ if not os.path.isfile(local_file):
 model = torch.package.PackageImporter(
     local_file).load_pickle("tts_models", "model")
 model.to(device)
+
+app.include_router(openai_router)
 
 
 @app.post("/speech-to-text")
@@ -174,5 +179,5 @@ if __name__ == '__main__':
     # or use default 80 for production
     port = int(os.environ.get("PORT", 80))
 
-    uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
-    # uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
+    # uvicorn.run(app, host="0.0.0.0", port=port, timeout_keep_alive=10)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, timeout_keep_alive=10, reload=True)
