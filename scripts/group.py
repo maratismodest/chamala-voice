@@ -337,8 +337,20 @@ fruits = [
     "балалар бакчасы",
     "бик тәмле"
 ]
-
-for x in fruits:
+animals = [ 
+"эт",
+  "мәче",
+  "кош",
+  "балык",
+  "ат",
+  "сыер",
+  "сарык",
+  "дуңгыз",
+  "тавык",
+  "куян",
+  "фил",
+  "арыслан"]
+for x in animals:
     print(x)
     example_text = x
     text = example_text
